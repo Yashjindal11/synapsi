@@ -12,6 +12,7 @@ import tomllib
 from pathlib import Path
 from typing import Any, Literal
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from synapsi.agents.base import Agent
@@ -110,10 +111,6 @@ def load_config(path: str | Path) -> SynapSIConfig:
     text = p.read_text(encoding="utf-8")
     suffix = p.suffix.lower()
     if suffix in (".yaml", ".yml"):
-        try:
-            import yaml
-        except ImportError as exc:
-            raise ConfigError("YAML config requires: pip install 'synapsi[yaml]'") from exc
         data = yaml.safe_load(text)
     elif suffix == ".toml":
         data = tomllib.loads(text)
