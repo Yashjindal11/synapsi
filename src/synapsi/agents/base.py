@@ -74,7 +74,7 @@ class Agent:
     @classmethod
     def from_role(cls, role: str, model: str | ModelProvider = "mock", **kw: Any) -> Agent:
         spec = get_role(role)
-        return cls(kw.pop("name", spec.title), spec, model, **kw)
+        return cls(kw.pop("name", None) or spec.title, spec, model, **kw)
 
     @property
     def model_id(self) -> str:
