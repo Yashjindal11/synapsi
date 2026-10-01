@@ -114,6 +114,16 @@ class SynapSIResult(BaseModel):
     def to_json(self, indent: int | None = 2) -> str:
         return self.model_dump_json(indent=indent)
 
+    def to_markdown(self) -> str:
+        from synapsi.reports import to_markdown
+
+        return to_markdown(self)
+
+    def to_html(self) -> str:
+        from synapsi.reports import to_html
+
+        return to_html(self)
+
     def save(self, path: str | Path) -> Path:
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
