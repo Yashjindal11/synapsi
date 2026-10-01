@@ -45,8 +45,48 @@ def create_provider(spec: str | ModelProvider, **options: Any) -> ModelProvider:
     return factory(model, **options)
 
 
-register_provider(
-    "mock",
-    lambda model, **kw: MockProvider(model, **kw),
-    "Deterministic offline placeholder output (tests and demos only).",
-)
+def _register_builtins() -> None:
+    from synapsi.providers.anthropic import AnthropicProvider
+    from synapsi.providers.gemini import GeminiProvider
+    from synapsi.providers.openai_compat import (
+        compatible_provider,
+        huggingface_provider,
+        ollama_provider,
+        openai_provider,
+    )
+
+    register_provider(
+        "mock",
+        lambda model, **kw: MockProvider(model, **kw),
+        "Deterministic offline placeholder output (tests and demos only).",
+    )
+    register_provider("openai", openai_provider, "OpenAI Chat Completions (OPENAI_API_KEY).")
+    register_provider(
+        "anthropic",
+        lambda model, **kw: AnthropicProvider(model, **kw),
+        "Anthropic Messages API (ANTHROPIC_API_KEY).",
+    )
+    register_provider(
+        "gemini",
+        lambda model, **kw: GeminiProvider(model, **kw),
+        "Google Gemini API (GEMINI_API_KEY).",
+    )
+    register_provider("ollama", ollama_provider, "Local Ollama server (http://localhost:11434).")
+    register_provider(
+        "huggingface", huggingface_provider, "Hugging Face inference router (HF_TOKEN)."
+    )
+    register_provider(
+        "openai-compatible",
+        compatible_provider,
+        "Any OpenAI-compatible server; requires base_url.",
+    )
+
+
+PROVIDER_KEY_ENV = {
+    "openai": "OPENAI_API_KEY",
+    "anthropic": "ANTHROPIC_API_KEY",
+    "gemini": "GEMINI_API_KEY",
+    "huggingface": "HF_TOKEN",
+}
+
+_register_builtins()
