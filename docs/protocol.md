@@ -43,8 +43,12 @@ Status is derived deterministically, then may be adjusted by the judge.
 | Challenged without external support | `uncertain` |
 | No evidence offered | `unsupported` |
 
-The judge may not mark a claim `supported` unless it has at least one piece of
-external evidence; such overrides are capped at `partially_supported`.
+The judge may not mark a claim `supported` or `partially_supported` unless it
+has at least one piece of external evidence; such overrides are capped at
+`unverified`, because the judge's opinion is itself model output.
+
+A claim with no external support that is contradicted by a `supported` claim
+becomes `contradicted`.
 
 ## Evidence
 
