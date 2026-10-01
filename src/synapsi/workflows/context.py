@@ -82,6 +82,7 @@ class DeliberationState:
     judgment: Judgment | None = None
     synthesis: Synthesis | None = None
     round: int = 0
+    invalid_references: dict[str, int] = field(default_factory=dict)
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     stopped_reason: str | None = None
@@ -182,7 +183,7 @@ class RunContext:
         return items
 
     # -- events -------------------------------------------------------------
-    def emit(self, kind: EventType, *, agent: str | None = None, **data: Any) -> None:
+    def emit(self, kind: EventType, /, *, agent: str | None = None, **data: Any) -> None:
         self.events.emit(
             Event(type=kind, run_id=self.run_id, step=self.current_step, agent=agent, data=data)
         )

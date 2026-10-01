@@ -191,11 +191,21 @@ class Agent:
         *,
         visible: Sequence[Perspective] = (),
         stance_instruction: str = "",
+        evidence_ids: set[str] | None = None,
     ) -> PerspectiveDraft:
-        """Form a perspective. With empty ``visible`` this is independent reasoning."""
+        """Form a perspective. With empty ``visible`` this is independent reasoning.
+
+        ``evidence_ids`` restricts shared evidence to a snapshot so concurrently
+        running agents do not see each other's tool results or recollections.
+        """
         if self.tools and ctx.settings.max_tool_rounds:
             await self.gather_with_tools(ctx)
-        sections = [P.render_problem(ctx), P.render_evidence(ctx.state.evidence)]
+        evidence = [
+            e
+            for e in ctx.state.evidence
+            if evidence_ids is None or e.id in evidence_ids or e.provenance.produced_by == self.name
+        ]
+        sections = [P.render_problem(ctx), P.render_evidence(evidence)]
         if visible:
             others = "\n\n".join(P.render_perspective(ctx, ctx.label(p.agent), p) for p in visible)
             sections.append(f"EARLIER ANALYSES (claims, not evidence):\n{others}")
@@ -207,7 +217,7 @@ class Agent:
             PerspectiveDraft,
             "\n\n".join(sections),
             task="analyze",
-            hints={"evidence_ids": [e.id for e in ctx.state.evidence]},
+            hints={"evidence_ids": [e.id for e in evidence]},
         )
 
     async def challenge(
