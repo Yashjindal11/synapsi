@@ -126,7 +126,10 @@ class Council:
         options: Sequence[str] | None = None,
         facts: Sequence[str] = (),
         run_id: str | None = None,
+        seed: int | None = None,
+        event_handlers: Sequence[Callable[[Event], None]] = (),
     ) -> SynapSIResult:
+        """Run one deliberation. ``seed`` overrides the council's seed for this run."""
         if isinstance(problem, str):
             problem = Problem(
                 question=problem,
@@ -135,14 +138,17 @@ class Council:
                 facts=list(facts),
             )
         workflow = self.workflow()
-        bus = EventBus(list(self.event_handlers))
+        bus = EventBus([*self.event_handlers, *event_handlers])
         background = self.memory.recall(problem.question) if self.memory is not None else []
+        settings = self.settings.model_copy(deep=True)
+        if seed is not None:
+            settings.seed = seed
         ctx = RunContext(
             problem,
             self.agents,
             judge=self.judge,
             synthesizer=self.synthesizer,
-            settings=self.settings.model_copy(deep=True),
+            settings=settings,
             events=bus,
             usage=UsageTracker(self.pricing),
             run_id=run_id,
