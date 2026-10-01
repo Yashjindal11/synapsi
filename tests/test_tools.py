@@ -21,7 +21,13 @@ from synapsi.tools.web import html_to_text
 
 @pytest.mark.parametrize(
     ("expr", "expected"),
-    [("2 + 3 * 4", 14), ("sqrt(16)", 4.0), ("mean([1, 2, 3])", 2.0), ("-2 ** 2", -4), ("pi > 3", None)],
+    [
+        ("2 + 3 * 4", 14),
+        ("sqrt(16)", 4.0),
+        ("mean([1, 2, 3])", 2.0),
+        ("-2 ** 2", -4),
+        ("pi > 3", None),
+    ],
 )
 def test_calculator(expr: str, expected: float | None) -> None:
     if expected is None:
@@ -106,7 +112,9 @@ async def test_fetch_url_extracts_text_when_allowed() -> None:
         html = "<html><head><title>t</title></head><body><script>x()</script><p>Hello</p></body>"
         return httpx.Response(200, html=html)
 
-    fetch = fetch_url_tool(allow_private=True, client=httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+    fetch = fetch_url_tool(
+        allow_private=True, client=httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    )
     result = await fetch(url="http://localhost/page")
     assert result.sources[0].content == "Hello"
 
