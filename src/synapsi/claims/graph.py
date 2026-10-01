@@ -19,6 +19,14 @@ class ClaimGraph:
         self._claims: dict[str, Claim] = {}
         self.relations: list[ClaimRelation] = []
 
+    @classmethod
+    def from_parts(cls, claims: Iterable[Claim], relations: Iterable[ClaimRelation]) -> ClaimGraph:
+        """Rebuild a graph from serialised claims (ids are kept as-is)."""
+        graph = cls()
+        graph._claims = {c.id: c for c in claims}
+        graph.relations = list(relations)
+        return graph
+
     # -- construction -----------------------------------------------------
     def add(self, claim: Claim) -> Claim:
         claim = claim.model_copy(update={"id": f"C{len(self._claims) + 1}"})

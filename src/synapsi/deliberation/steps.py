@@ -82,13 +82,22 @@ class IndependentAnalysis(Step):
 
     name = "independent_analysis"
 
-    def __init__(self, agents: list[str] | None = None, *, level: int | None = None):
+    def __init__(
+        self,
+        agents: list[str] | None = None,
+        *,
+        level: int | None = None,
+        first_n: int | None = None,
+    ):
         super().__init__()
         self.agent_names = agents
         self.level = level
+        self.first_n = first_n
 
     async def run(self, ctx: RunContext) -> None:
         agents = ctx.select(self.agent_names, level=self.level)
+        if self.first_n is not None:
+            agents = agents[: self.first_n]
         snapshot = {e.id for e in ctx.state.evidence}
 
         async def analyze(agent: Agent) -> Perspective:
@@ -100,7 +109,12 @@ class IndependentAnalysis(Step):
             raise RuntimeError("every agent failed during independent analysis")
 
     def describe(self) -> dict[str, Any]:
-        return {"step": self.name, "agents": self.agent_names, "level": self.level}
+        return {
+            "step": self.name,
+            "agents": self.agent_names,
+            "level": self.level,
+            "first_n": self.first_n,
+        }
 
 
 class SequentialCritique(Step):

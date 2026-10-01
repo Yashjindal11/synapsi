@@ -60,6 +60,7 @@ class RunSettings(BaseModel):
     blind_review: bool = True
     randomize_order: bool = True
     max_tool_rounds: int = 2
+    early_stop: bool = True
     fail_fast: bool = False
     repair_attempts: int = 1
     budget: Budget = Budget()

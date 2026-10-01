@@ -33,6 +33,15 @@ class EvidencePool:
         self._items: dict[str, Evidence] = {}
         self._by_key: dict[tuple[str, str], str] = {}
 
+    @classmethod
+    def from_items(cls, items: Iterable[Evidence]) -> EvidencePool:
+        """Rebuild a pool from serialised evidence (ids are kept as-is)."""
+        pool = cls()
+        for ev in items:
+            pool._items[ev.id] = ev
+            pool._by_key[(ev.fingerprint, ev.content.strip())] = ev.id
+        return pool
+
     def add(self, evidence: Evidence) -> Evidence:
         key = (evidence.fingerprint, evidence.content.strip())
         if key in self._by_key:
