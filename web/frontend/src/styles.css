@@ -82,6 +82,16 @@ tr.dim td { color: var(--muted); }
 .side { background: var(--bg); border-radius: 8px; padding: 0.5rem 0.7rem; }
 .events { font-size: 0.85rem; max-height: 50vh; overflow-y: auto; }
 .empty { margin-top: 15vh; max-width: 560px; color: var(--muted); }
+.graph-controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.legend { display: flex; gap: 0.7rem; margin-left: auto; }
+.legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; }
+.graph-scroll { overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; max-height: 70vh; }
+.node { cursor: pointer; }
+.graph-agent { font-weight: 700; font-size: 13px; fill: var(--ink); }
+.graph-id { font-size: 10.5px; fill: var(--muted); font-family: ui-monospace, monospace; }
+.graph-text { font-size: 12px; fill: var(--ink); }
+.graph-sub { font-size: 10px; fill: var(--muted); }
+.detail { margin-top: 0.8rem; }
 .empty h2 { color: var(--ink); font-size: 1.4rem; }
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; }

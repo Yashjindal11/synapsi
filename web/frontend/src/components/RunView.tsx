@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import type { Claim, Finding, Result } from "../types";
+import { ClaimGraph } from "./ClaimGraph";
 
-const TABS = ["Overview", "Agents", "Claims", "Evidence", "Debate", "Disagreement", "Judge", "Metadata"] as const;
+const TABS = ["Overview", "Agents", "Claim graph", "Claims", "Evidence", "Debate", "Disagreement", "Judge", "Metadata"] as const;
 type Tab = (typeof TABS)[number];
 
 function Status({ status }: { status: string }) {
@@ -121,6 +122,8 @@ export function RunView({ result }: { result: Result }) {
           ))}
         </section>
       )}
+
+      {tab === "Claim graph" && <ClaimGraph result={result} />}
 
       {tab === "Claims" && <ClaimTable claims={result.claims} />}
 
