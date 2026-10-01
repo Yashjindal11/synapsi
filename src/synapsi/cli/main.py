@@ -295,6 +295,26 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     return _experiment(args, problems, name=f"benchmark-{problems.name}")
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    try:
+        import uvicorn
+
+        from synapsi.server import create_app
+    except ImportError:
+        _err("the web server needs extras: pip install 'synapsi[server]'")
+        return 2
+    static = Path(args.static) if args.static else Path("web/frontend/dist")
+    app = create_app(
+        config_path=_find_config(args.config),
+        runs_dir=Path(args.runs_dir),
+        static_dir=static if static.exists() else None,
+    )
+    if args.host not in ("127.0.0.1", "localhost"):
+        _err("warning: the API has no user accounts; set SYNAPSI_API_TOKEN before exposing it.")
+    uvicorn.run(app, host=args.host, port=args.port)
+    return 0
+
+
 # -- parser ---------------------------------------------------------------------
 
 
@@ -385,6 +405,14 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--out", help="directory for summary.json, records.jsonl, report.md")
         p.add_argument("--save-runs", action="store_true", help="also save every run's JSON")
         p.set_defaults(func=cmd_evaluate if name == "evaluate" else cmd_benchmark)
+
+    p = sub.add_parser("serve", help="start the web API and dashboard")
+    p.add_argument("-c", "--config")
+    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--port", type=int, default=8000)
+    p.add_argument("--runs-dir", default="runs")
+    p.add_argument("--static", help="built dashboard directory (default: web/frontend/dist)")
+    p.set_defaults(func=cmd_serve)
     return parser
 
 
