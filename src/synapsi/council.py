@@ -13,6 +13,7 @@ from synapsi.core.problem import Problem
 from synapsi.evidence.models import Evidence, Provenance, SourceKind
 from synapsi.judgment.judge import Judge
 from synapsi.judgment.structural import StructuralJudge
+from synapsi.memory import MemoryStore
 from synapsi.modes import PRESET_ROLES, mode_settings
 from synapsi.observability.events import Event, EventBus, JSONLSink
 from synapsi.observability.usage import UsageTracker
@@ -52,7 +53,7 @@ class Council:
         seed: int | None = None,
         budget: Budget | None = None,
         pricing: PricingTable | dict[str, tuple[float, float]] | None = None,
-        memory: Any | None = None,
+        memory: MemoryStore | None = None,
         event_handlers: Sequence[Callable[[Event], None]] = (),
         trace_dir: str | Path | None = None,
     ):
