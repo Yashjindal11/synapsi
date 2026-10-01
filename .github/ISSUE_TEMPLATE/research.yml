@@ -1,0 +1,21 @@
+name: Research question or result
+description: Share an experiment, a reproducible finding, or a hypothesis to test
+labels: [research]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question or hypothesis
+      placeholder: "Does blind review reduce conformity-driven position changes?"
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Setup
+      description: Problem set, strategies, models, repeats, seed, SynapSI and prompt versions.
+  - type: textarea
+    id: results
+    attributes:
+      label: Results
+      description: Attach summary.json / report.md from `synapsi evaluate` or `synapsi benchmark`. Negative results are welcome.

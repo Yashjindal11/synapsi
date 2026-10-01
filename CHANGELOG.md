@@ -1,0 +1,31 @@
+# Changelog
+
+All notable changes to this project are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
+[Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+### Added
+- Deliberation protocol: perspectives, claims, evidence with provenance,
+  challenges, rebuttals, revisions, disagreements, judgments, synthesis.
+- Claim graph with deterministic, evidence-based status rules; agreement never
+  creates support, and judges cannot mark claims supported without external
+  evidence.
+- Providers: OpenAI, Anthropic, Gemini, Ollama, Hugging Face, any
+  OpenAI-compatible server, and a deterministic mock; retry, rate limiting,
+  caching, opt-in pricing.
+- Agents with 12 built-in roles, custom roles, and overridable protocol tasks.
+- Workflow engine (sequential, parallel, loop, conditional, function steps,
+  stop conditions, budgets) and ten built-in strategies.
+- Model judge (blind, vote counts hidden), structural judge, majority-vote and
+  single-model baselines; status-driven synthesis.
+- Tools: calculator, document search, read-only SQL, web search (Tavily,
+  Brave, static), guarded URL fetching; evidence collection and claim
+  verification steps.
+- Optional long-term memory, events and JSONL traces, usage and cost tracking.
+- YAML/TOML/JSON configuration, CLI, REST/WebSocket API, React dashboard with
+  claim-graph visualisation.
+- Experiment engine with synthetic suites, accuracy CIs, coverage,
+  calibration, flip analysis, and exact McNemar comparisons.
+- Thirteen runnable examples.

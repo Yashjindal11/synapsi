@@ -1,0 +1,22 @@
+name: Feature or extension
+description: Propose a provider, agent role, tool, step, strategy, or evaluator
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [provider, agent/role, tool, workflow step, strategy, judge/synthesis, experiments, CLI, web, docs, other]
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Can it be built as an extension (plugin) without changing core code?
