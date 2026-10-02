@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import random
 import uuid
 from dataclasses import dataclass, field
@@ -194,6 +195,22 @@ class RunContext:
         self.emit(EventType.WARNING, message=message)
 
     # -- evidence -----------------------------------------------------------
+    def visible_evidence(self, agent: str, snapshot: set[str] | None = None) -> list[Evidence]:
+        """Evidence an agent may see in its prompts.
+
+        External evidence (restricted to ``snapshot`` plus the agent's own tool
+        results when given) and the agent's *own* model-knowledge notes. Other
+        agents' recollections are opinions, so they are never shown as evidence.
+        """
+        out = []
+        for e in self.state.evidence:
+            own = e.provenance.produced_by == agent
+            if (e.is_external and (snapshot is None or e.id in snapshot or own)) or (
+                not e.is_external and own
+            ):
+                out.append(e)
+        return out
+
     def add_evidence(self, evidence: Evidence) -> Evidence:
         before = len(self.state.evidence)
         stored = self.state.evidence.add(evidence)
@@ -225,6 +242,17 @@ class RunContext:
             self.emit(EventType.BUDGET_EXCEEDED, reason=reason)
             raise BudgetExceeded(reason)
 
+    def call_seed(self, agent: str, task: str) -> int | None:
+        """Provider seed for one call: reproducible per run, distinct per agent and task.
+
+        A single shared seed would make identical agents on one model return
+        identical samples, silently destroying independence.
+        """
+        if self.settings.seed is None:
+            return None
+        key = f"{self.settings.seed}:{agent}:{task}:{self.state.round}"
+        return int(hashlib.sha256(key.encode()).hexdigest()[:8], 16)
+
     async def generate(
         self,
         *,
@@ -251,7 +279,7 @@ class RunContext:
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
-            seed=self.settings.seed,
+            seed=self.call_seed(agent, task),
             metadata=metadata,
         )
 

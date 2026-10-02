@@ -192,19 +192,16 @@ class Agent:
         visible: Sequence[Perspective] = (),
         stance_instruction: str = "",
         evidence_ids: set[str] | None = None,
+        use_tools: bool = True,
     ) -> PerspectiveDraft:
         """Form a perspective. With empty ``visible`` this is independent reasoning.
 
         ``evidence_ids`` restricts shared evidence to a snapshot so concurrently
         running agents do not see each other's tool results or recollections.
         """
-        if self.tools and ctx.settings.max_tool_rounds:
+        if use_tools and self.tools and ctx.settings.max_tool_rounds:
             await self.gather_with_tools(ctx)
-        evidence = [
-            e
-            for e in ctx.state.evidence
-            if evidence_ids is None or e.id in evidence_ids or e.provenance.produced_by == self.name
-        ]
+        evidence = ctx.visible_evidence(self.name, evidence_ids)
         sections = [P.render_problem(ctx), P.render_evidence(evidence)]
         if visible:
             others = "\n\n".join(P.render_perspective(ctx, ctx.label(p.agent), p) for p in visible)
@@ -228,9 +225,10 @@ class Agent:
         max_challenges: int,
         instruction: str = "",
     ) -> ChallengeSet:
+        evidence = ctx.visible_evidence(self.name)
         sections = [
             P.render_problem(ctx),
-            P.render_evidence(ctx.state.evidence),
+            P.render_evidence(evidence),
             f"CLAIMS TO EXAMINE:\n{P.render_claims(ctx, targets)}",
             instruction
             or (
@@ -247,7 +245,7 @@ class Agent:
             task="challenge",
             hints={
                 "claim_ids": [c.id for c in targets],
-                "evidence_ids": [e.id for e in ctx.state.evidence],
+                "evidence_ids": [e.id for e in evidence],
                 "mock_list_len": min(max_challenges, 2),
             },
         )
@@ -256,9 +254,10 @@ class Agent:
         self, ctx: RunContext, targets: Sequence[tuple[str, Perspective]], *, max_challenges: int
     ) -> ReviewSet:
         rendered = "\n\n".join(P.render_perspective(ctx, label, p) for label, p in targets)
+        evidence = ctx.visible_evidence(self.name)
         sections = [
             P.render_problem(ctx),
-            P.render_evidence(ctx.state.evidence),
+            P.render_evidence(evidence),
             f"ANALYSES TO REVIEW:\n{rendered}",
             "Review each analysis on evidence and reasoning, not on whether it matches your "
             f"view. List claims you find well supported and at most {max_challenges} "
@@ -274,16 +273,17 @@ class Agent:
             hints={
                 "targets": [label for label, _ in targets],
                 "claim_ids": claim_ids,
-                "evidence_ids": [e.id for e in ctx.state.evidence],
+                "evidence_ids": [e.id for e in evidence],
                 "mock_list_len": len(targets),
             },
         )
 
     async def respond(self, ctx: RunContext, challenges: Sequence[Challenge]) -> RebuttalSet:
         own = ctx.state.claims.by_agent(self.name)
+        evidence = ctx.visible_evidence(self.name)
         sections = [
             P.render_problem(ctx),
-            P.render_evidence(ctx.state.evidence),
+            P.render_evidence(evidence),
             f"YOUR CLAIMS:\n{P.render_claims(ctx, own, show_owner=False)}",
             f"CHALLENGES TO YOUR CLAIMS:\n{P.render_challenges(challenges, ctx)}",
             "Respond to each challenge. Concede or revise when the challenge is right; defend "
@@ -297,7 +297,7 @@ class Agent:
             task="respond",
             hints={
                 "challenge_ids": [c.id for c in challenges],
-                "evidence_ids": [e.id for e in ctx.state.evidence],
+                "evidence_ids": [e.id for e in evidence],
                 "mock_list_len": len(challenges),
             },
         )
@@ -312,9 +312,10 @@ class Agent:
         others: Sequence[tuple[str, Perspective]],
     ) -> RevisionDraft:
         other_text = "\n\n".join(P.render_perspective(ctx, label, p) for label, p in others)
+        evidence = ctx.visible_evidence(self.name)
         sections = [
             P.render_problem(ctx),
-            P.render_evidence(ctx.state.evidence),
+            P.render_evidence(evidence),
             f"YOUR CURRENT POSITION:\n{P.render_perspective(ctx, 'You', own)}",
             f"CHALLENGES RAISED:\n{P.render_challenges(challenges, ctx) or '(none)'}",
             f"RESPONSES:\n{P.render_rebuttals(rebuttals) or '(none)'}",
@@ -330,7 +331,7 @@ class Agent:
             task="revise",
             hints={
                 "own_claim_ids": own.claim_ids,
-                "evidence_ids": [e.id for e in ctx.state.evidence],
+                "evidence_ids": [e.id for e in evidence],
                 "mock_list_len": 1,
             },
         )
