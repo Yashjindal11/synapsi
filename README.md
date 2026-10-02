@@ -118,8 +118,9 @@ Providers are plain HTTP adapters — no vendor SDKs required.
 import asyncio
 from synapsi import Agent, Council
 
+
 async def main():
-    model = "openai:gpt-4o-mini"          # or "anthropic:...", "gemini:...", "ollama:llama3.1"
+    model = "openai:gpt-4o-mini"  # or "anthropic:...", "gemini:...", "ollama:llama3.1"
     council = Council(
         [
             Agent.from_role("researcher", model),
@@ -133,14 +134,17 @@ async def main():
     result = await council.run(
         "Did the four-day week cause the productivity increase?",
         options=["yes", "no", "cannot be determined"],
-        facts=["Output per employee rose 8% during the pilot.",
-               "A new CRM was rolled out the same quarter."],
+        facts=[
+            "Output per employee rose 8% during the pilot.",
+            "A new CRM was rolled out the same quarter.",
+        ],
     )
     print(result.judgment.verdict, result.answer)
     print(result.synthesis.summary)
     for finding in result.synthesis.disputed:
         print("disputed:", finding.statement)
-    result.save("run.json")               # JSON; also .to_markdown(), .to_html()
+    result.save("run.json")  # JSON; also .to_markdown(), .to_html()
+
 
 asyncio.run(main())
 ```
@@ -164,9 +168,14 @@ Any other string becomes a free-form expertise (`Agent.from_role("aviation_econo
 and `register_role(RoleSpec(...))` adds reusable ones.
 
 ```python
-Agent("Platform Engineer", "software_engineer", "anthropic:<model>",
-      instructions="Prioritise operability and failure isolation.",
-      tools=[calculator_tool()], temperature=0.5)
+Agent(
+    "Platform Engineer",
+    "software_engineer",
+    "anthropic:<model>",
+    instructions="Prioritise operability and failure isolation.",
+    tools=[calculator_tool()],
+    temperature=0.5,
+)
 ```
 
 ## Workflows and strategies
@@ -265,8 +274,17 @@ the **same** underlying source.
 ## Tools
 
 ```python
-from synapsi.tools import (calculator_tool, document_search_tool, DocumentStore,
-                           sql_tool, web_search_tool, TavilySearch, fetch_url_tool, tool)
+from synapsi.tools import (
+    calculator_tool,
+    document_search_tool,
+    DocumentStore,
+    sql_tool,
+    web_search_tool,
+    TavilySearch,
+    fetch_url_tool,
+    tool,
+)
+
 
 @tool(description="Look up current fleet size")
 def fleet_size(airline: str) -> str: ...
@@ -358,11 +376,15 @@ from synapsi.experiments.suites import base_rates
 exp = Experiment(
     base_rates(n=30, seed=0),
     ["single_model", "majority_vote", "independent_panel", "debate", "adversarial"],
-    agents=lambda: [Agent.from_role(r, "ollama:llama3.1") for r in ("analyst", "statistician", "skeptic")],
-    repeats=3, seed=0,
+    agents=lambda: [
+        Agent.from_role(r, "ollama:llama3.1") for r in ("analyst", "statistician", "skeptic")
+    ],
+    repeats=3,
+    seed=0,
 )
 result = await exp.run()
-print(result.to_markdown()); result.save("results/base-rates")
+print(result.to_markdown())
+result.save("results/base-rates")
 ```
 
 Per strategy: accuracy with Wilson 95% CI, **coverage** (abstentions are not
@@ -387,13 +409,18 @@ repository must come from saved experiment output with its configuration.
 from synapsi import Agent
 from synapsi.agents.drafts import PerspectiveDraft
 
+
 class EconomistAgent(Agent):
     def system_prompt(self) -> str:
         return super().system_prompt() + "\nAlways state one testable prediction."
 
+
 class RuleBasedAgent(Agent):
-    async def analyze(self, ctx, **_) -> PerspectiveDraft:
-        ...  # compute an answer in code; add calculation evidence via ctx.add_evidence
+    async def analyze(
+        self, ctx, **_
+    ) -> (
+        PerspectiveDraft
+    ): ...  # compute an answer in code; add calculation evidence via ctx.add_evidence
 ```
 
 See [examples/09_custom_agent.py](examples/09_custom_agent.py) for a
@@ -404,18 +431,26 @@ model-free agent that participates in debate alongside LLM agents.
 ```python
 from synapsi import Council, Workflow
 from synapsi.workflows import Loop
-from synapsi.deliberation.steps import (IndependentAnalysis, CrossExamination,
-                                        RespondToChallenges, Revision, converged)
+from synapsi.deliberation.steps import (
+    IndependentAnalysis,
+    CrossExamination,
+    RespondToChallenges,
+    Revision,
+    converged,
+)
 from synapsi.strategies import finalize
 
 workflow = Workflow(
     [
         IndependentAnalysis(),
-        MyStopIfUnanimous(),                       # any Step subclass; raise StopWorkflow to end early
-        Loop([CrossExamination(), RespondToChallenges(), Revision()],
-             max_iterations=3, until=converged),
+        MyStopIfUnanimous(),  # any Step subclass; raise StopWorkflow to end early
+        Loop(
+            [CrossExamination(), RespondToChallenges(), Revision()],
+            max_iterations=3,
+            until=converged,
+        ),
     ],
-    finalize=finalize(),                           # claim status, disagreements, judge, synthesis
+    finalize=finalize(),  # claim status, disagreements, judge, synthesis
 )
 council = Council(agents, strategy=workflow)
 ```

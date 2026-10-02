@@ -180,6 +180,12 @@ class Judge:
         claims = ctx.state.claims
         answer = normalize_answer(draft.answer, ctx.problem.options)
         verdict = draft.verdict
+        options = ctx.problem.options
+        if verdict is Verdict.DECIDED and options and answer not in options:
+            ctx.warn(
+                f"judge answer {draft.answer!r} is not one of the options; treated as inconclusive"
+            )
+            verdict = Verdict.INCONCLUSIVE
         if verdict is not Verdict.DECIDED:
             answer = None
         assessments = []

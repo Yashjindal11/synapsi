@@ -27,17 +27,17 @@ class MyStep(Step):
     name = "my_step"
 
     async def run(self, ctx: RunContext) -> None:
-        ctx.problem                     # question, options, context (no gold answer)
+        ctx.problem  # question, options, context (no gold answer)
         ctx.agents, ctx.select(names, level=2)
-        ctx.state.perspectives          # latest per agent
-        ctx.state.history               # every perspective, incl. revisions/adversarial
-        ctx.state.claims                # ClaimGraph
-        ctx.state.evidence              # EvidencePool
+        ctx.state.perspectives  # latest per agent
+        ctx.state.history  # every perspective, incl. revisions/adversarial
+        ctx.state.claims  # ClaimGraph
+        ctx.state.evidence  # EvidencePool
         ctx.state.challenges, ctx.state.rebuttals, ctx.state.disagreements
-        ctx.settings                    # rounds, limits, seed, budget, blind_review...
-        ctx.rng                         # seeded random.Random
-        ctx.label(agent_name)           # "Analyst 3" when blind review is on
-        ctx.ordered(items)              # seeded shuffle to avoid positional bias
+        ctx.settings  # rounds, limits, seed, budget, blind_review...
+        ctx.rng  # seeded random.Random
+        ctx.label(agent_name)  # "Analyst 3" when blind review is on
+        ctx.ordered(items)  # seeded shuffle to avoid positional bias
         ctx.emit(EventType.WARNING, message="...")
         await ctx.generate(provider=..., schema=MyModel, messages=[...], agent="x", task="y")
 ```
@@ -50,17 +50,22 @@ budget, validates structured output, and records usage and events.
 ```python
 class StopIfUnanimous(Step):
     name = "stop_if_unanimous"
+
     async def run(self, ctx):
         answers = {p.answer for p in ctx.state.perspectives.values()}
         if len(answers) == 1 and None not in answers:
             raise StopWorkflow("independent agents agreed")
 
+
 workflow = Workflow(
     [
         IndependentAnalysis(),
         StopIfUnanimous(),
-        Loop([CrossExamination(), RespondToChallenges(), Revision(see_others=False)],
-             max_iterations=3, until=converged),
+        Loop(
+            [CrossExamination(), RespondToChallenges(), Revision(see_others=False)],
+            max_iterations=3,
+            until=converged,
+        ),
     ],
     name="debate_if_needed",
     finalize=finalize(),
@@ -76,6 +81,7 @@ plain `debate`.
 
 ```python
 from synapsi import register_strategy
+
 register_strategy("debate_if_needed", lambda: build(), "Debate only on disagreement")
 ```
 

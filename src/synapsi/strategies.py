@@ -132,7 +132,7 @@ def jury() -> Workflow:
     return Workflow(
         [
             EvidenceCollection(),
-            IndependentAnalysis(),
+            IndependentAnalysis(use_tools=False),
             _verify(),
             CrossExamination(),
             RespondToChallenges(),
@@ -145,7 +145,7 @@ def evidence_first() -> Workflow:
     return Workflow(
         [
             EvidenceCollection(),
-            IndependentAnalysis(),
+            IndependentAnalysis(use_tools=False),
             VerifyClaims(),
             PeerReview(),
             RespondToChallenges(),

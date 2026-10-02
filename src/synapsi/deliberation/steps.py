@@ -88,11 +88,13 @@ class IndependentAnalysis(Step):
         *,
         level: int | None = None,
         first_n: int | None = None,
+        use_tools: bool = True,
     ):
         super().__init__()
         self.agent_names = agents
         self.level = level
         self.first_n = first_n
+        self.use_tools = use_tools
 
     async def run(self, ctx: RunContext) -> None:
         agents = ctx.select(self.agent_names, level=self.level)
@@ -101,7 +103,7 @@ class IndependentAnalysis(Step):
         snapshot = {e.id for e in ctx.state.evidence}
 
         async def analyze(agent: Agent) -> Perspective:
-            draft = await agent.analyze(ctx, evidence_ids=snapshot)
+            draft = await agent.analyze(ctx, evidence_ids=snapshot, use_tools=self.use_tools)
             return register_perspective(ctx, agent, draft, independent=True)
 
         results = await for_each_agent(ctx, agents, analyze)
@@ -443,7 +445,14 @@ class Revision(Step):
         async def revise(agent: Agent) -> Perspective:
             own = snapshot[agent.name]
             own_claims = set(own.claim_ids)
-            challenges = [c for c in ctx.state.challenges if c.target_claim_id in own_claims]
+            # Only this round's challenges and those still open: keeps prompts bounded.
+            challenges = [
+                c
+                for c in ctx.state.challenges
+                if c.target_claim_id in own_claims and (c.round == round_ or c.status == "open")
+            ]
+            if not challenges and not self.see_others:
+                return own  # nothing new to respond to; skip the model call
             challenge_ids = {c.id for c in challenges}
             rebuttals = [r for r in ctx.state.rebuttals if r.challenge_id in challenge_ids]
             others = []
