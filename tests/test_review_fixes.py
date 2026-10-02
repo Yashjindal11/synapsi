@@ -74,3 +74,15 @@ async def test_evidence_first_does_not_replan_tools_during_analysis() -> None:
     agent = Agent("r", "researcher", MockProvider(), tools=[search])
     result = await Council([agent], strategy="evidence_first", judge="structural").run("q")
     assert "tool_plan" not in result.metadata.usage.by_task
+
+
+async def test_shared_model_warns_about_correlated_errors() -> None:
+    shared = MockProvider()
+    same = await Council([Agent("a", model=shared), Agent("b", model=shared)]).run("q")
+    assert any("correlated errors" in w for w in same.metadata.warnings)
+    assert same.uncertainty.distinct_models == 1
+    mixed = await Council(
+        [Agent("a", model=MockProvider("m1")), Agent("b", model=MockProvider("m2"))]
+    ).run("q")
+    assert not any("correlated errors" in w for w in mixed.metadata.warnings)
+    assert mixed.uncertainty.distinct_models == 2

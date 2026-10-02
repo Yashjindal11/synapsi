@@ -164,6 +164,11 @@ class Council:
                 )
             )
         started = datetime.now(UTC)
+        if len(self.agents) > 1 and len({a.model_id for a in self.agents}) == 1:
+            ctx.warn(
+                "all agents share one model; their agreement may reflect correlated errors "
+                "rather than independent confirmation"
+            )
         await workflow.execute(ctx)
         finished = datetime.now(UTC)
         result = self._result(ctx, workflow, started, finished)
@@ -207,6 +212,7 @@ class Council:
                 disagreements=state.disagreements,
                 judgment=state.judgment,
                 invalid_references=sum(state.invalid_references.values()),
+                distinct_models=len({p.model for p in state.perspectives.values()}),
             ),
             provenance=[
                 SourceRecord(

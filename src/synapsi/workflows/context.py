@@ -46,7 +46,11 @@ class SynthesizerLike(Protocol):
 
 
 class Budget(BaseModel):
-    """Hard limits for one run. ``None`` means unlimited."""
+    """Hard limits for one run. ``None`` means unlimited.
+
+    Checked before every model call; calls already in flight when a limit is
+    reached still complete, so concurrent steps may overshoot slightly.
+    """
 
     max_cost_usd: float | None = None
     max_tokens: int | None = None

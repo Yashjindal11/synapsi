@@ -45,6 +45,7 @@ class UncertaintyReport(BaseModel):
     source_dependence: SourceDependence = Field(default_factory=SourceDependence)
     unresolved_disagreements: int = 0
     invalid_references: int = 0
+    distinct_models: int = 0
 
 
 class SourceRecord(BaseModel):
@@ -151,6 +152,7 @@ def uncertainty_report(
     disagreements: list[Disagreement],
     judgment: Judgment | None,
     invalid_references: int,
+    distinct_models: int = 0,
 ) -> UncertaintyReport:
     current = Counter(p.answer for p in perspectives if p.answer is not None)
     first = Counter(p.answer for p in initial if p.answer is not None)
@@ -171,4 +173,5 @@ def uncertainty_report(
         source_dependence=dependence,
         unresolved_disagreements=sum(1 for d in disagreements if d.status == "unresolved"),
         invalid_references=invalid_references,
+        distinct_models=distinct_models,
     )

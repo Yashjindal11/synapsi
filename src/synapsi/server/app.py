@@ -250,6 +250,8 @@ def create_app(
 
         @app.get("/{path:path}", include_in_schema=False)
         async def spa(path: str) -> FileResponse:
+            if path.startswith("api/"):
+                raise HTTPException(404, "not found")
             return FileResponse(static_dir / "index.html")
 
     return app
